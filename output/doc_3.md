@@ -1,0 +1,25 @@
+Vision-Language Adapter: The vision-language adapter is a lightweight two-layer MLP that projects the output of SAIL-ViT into the language space, adjusting dimensions and mitigating the modality gap.
+
+Large Language Models: For the foundation language models in SAIL-VL2, we explore both dense LLMs (Qwen3-Instruct (Yang et al., 2025) series) and sparse MoE architectures (Qwen3-MoE (Yang et al., 2025)). Given an instruction, it is first embedded into a sequence of linguistic tokens, which are then processed jointly with the aligned visual tokens in the LLM, enabling unified multimodal understanding.
+
+### 2.1 SAIL-ViT
+
+The vision encoder is a core component for perceiving visual information and aligning it with the linguistic space. To this end, we develop SAIL-ViT, a pre-trained vision encoder. SAIL-ViT is progressively optimized through a training strategy that injects multi-granularity knowledge, enabling comprehensive alignment with LLMs.
+
+#### 2.1.1 Progressive Training Strategy
+
+We first introduce a three-stage progressive training strategy that incrementally aligns the vision encoder with the LLM’s representation space by injecting knowledge of different granularities and leveraging corresponding training data. All three stages are trained in an instruction-tuning manner. We next describe each stage in detail:
+
+Stage I: Warm-up adaptation. In this stage, both the vision encoder and the LLM are frozen, and only the parameters of the adapter are tuned. The goal is to activate the adapter's capacity to perform a coarse-grained adaptation of the vision encoder outputs into the LLM domain. For training, we employ 8M simple multimodal understanding examples, including 4.9M captioning samples from the SAIL-Caption dataset (Dong et al., 2025a) and 3.1M OCR samples from the IDL-WDS dataset (Biten et al., 2022). Training is conducted for one epoch with a learning rate of  $ 2 \times 10^{-4} $  and a batch size of 1920.
+
+Stage II: Fine-grained alignment. Here, we keep the LLM fixed while unlocking both the vision encoder and the adapter, enabling deeper and more comprehensive alignment. Beyond the datasets used in Stage I, we expand the scale and diversity of captioning data with an additional 6.7M samples from SAIL-Caption, supplement the OCR source with DocStruct (Wang et al., 2020), and further incorporate video-caption data for joint training, thereby enriching distributional diversity. This stage is trained with a reduced learning rate of  $ 2 \times 10^{-5} $  and a batch size of 512.
+
+Stage III: World knowledge injection. To move beyond conventional alignment, we introduce a stage that integrates broad multimodal understanding and reasoning tasks, enhancing the vision encoder's generalization and enabling comprehensive alignment with the LLM across multiple levels. In this stage, we unlock all parameters, including the vision encoder, adapter, and LLM, and train on a wide spectrum of data (36.5M): captioning (Deitke et al., 2024; Dong et al., 2025a), OCR (Mathew et al., 2021; Laurençon et al., 2024a; Wang et al., 2020; Deitke et al., 2024), open-ended QA (Chen et al., 2024a; Cui et al., 2024), math reasoning (Shi et al., 2024b; Wang et al., 2025c; Cao & Xiao, 2022; Amini et al., 2019), short QA (Biten et al., 2019; Goyal et al., 2017; Marino et al., 2019), and pure text corpora (Teknium, 2023; Xu et al., 2024c). This diverse and large-scale training significantly boosts the generalization ability of the vision encoder across tasks. Training is performed for one epoch with a learning rate of  $ 1 \times 10^{-5} $  and a batch size of 512.
+
+The vision encoder trained in the final stage is taken as SAIL-ViT and provides the foundation for subsequent SAIL-VL2 training.
+
+#### 2.1.2 SAIL-ViT Family
+
+We employ AIMv2-Large/Huge (Fini et al., 2024) as the foundation vision encoder and instantiate SAIL-ViT with two variants, further optimized under our progressive training schedule. The first, vanilla ViT, accepts fixed  $ 448 \times 448 $  inputs. Each image is split into  $ 32 \times 32 $  non-overlapping patches (patch size 14), producing 1,024 tokens fused with learnable positional embeddings. High-resolution images are tiled into multiple  $ 448 \times 448 $  crops, encoded independently, and their tokens aggregated for downstream processing. The second, SAIL-ViT-AnyRes, supports arbitrary resolutions. Since conventional positional embeddings are fixed-length and hard to generalize, we adopt an interpolation-based mechanism: pretrained embeddings are resized to match the input resolution, providing a global prior that improves extrapolation. Images are thus converted into token sequences proportional to their resolution.
+
+We conducted large-scale pre-training on both proposed SAIL-ViT variants, building powerful vision encoders that deliver strong visual representations.
