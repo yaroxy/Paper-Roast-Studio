@@ -7,7 +7,7 @@
 - 简洁的 Gradio 界面，操作直观
 
 ## 界面介绍
-- 顶部：标题与样式注入（居中图片渲染）
+
 - 左侧（1/2）：
   - 上传 PDF（支持 `.pdf`）
   - 页码下拉选择：切换展示某一页的 Markdown 与图片
@@ -38,16 +38,12 @@
 在项目根目录创建 `.env` 文件：
 
 ```
-# OCR 服务
-API_URL=你的OCR服务地址
-TOKEN=你的OCR访问令牌
-# 可选：是否验证 SSL（默认 true）
-VERIFY_SSL=true
+# Paddle OCR VL 服务
+API_URL=你的PaddleOCRVL服务地址
+TOKEN=你的PaddleOCRVL访问令牌
 
 # Qwen / DashScope
 DASHSCOPE_API_KEY=你的DashScope密钥
-# 可选：自定义兼容模式 URL
-DASHSCOPE_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
 ```
 
 加载逻辑参考：
@@ -72,7 +68,7 @@ DASHSCOPE_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
 ## 致谢
 - Qwen 与 DashScope 提供多模态大模型能力
 - Gradio 提供快速的 Web UI 框架
-- OCR 服务提供文档结构化解析能力
+- Paddle OCR VL 服务提供文档结构化解析能力
 
 ---
 
